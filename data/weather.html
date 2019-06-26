@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<!-- Required meta tags always come first -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<meta http-equiv="refresh" content="900" >
+	<!-- Title of page -->
+	<title>Wetter</title>
+		<!-- favicon --><!---->
+		<link rel="shortcut icon" href="wetter.svg">
+		<link rel="apple-touch-icon image_src" href="favicon.ico">
+		<link rel="search" type="application/opensearchdescription+xml" title="" href="/opensearch.xml">
+
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0">
+
+		<meta property="og:type" content= "website" />
+		<meta property="og:url" content=""/>
+		<meta property="og:site_name" content="" />
+		<meta property="og:image" itemprop="image primaryImageOfPage" content="favicon.ico" />
+
+		<meta name="twitter:card" content="summary"/>
+		<meta name="twitter:domain" content=""/>
+		<meta name="twitter:title" property="og:title" itemprop="name" content="" />
+		<meta name="twitter:description" property="og:description" itemprop="description" content="" />
+
+		<script src="reconnecting-websocket.js" type="text/javascript" async=""></script>
+		<script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+		<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+	<style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+		<script>
+			var Socket;
+			function init() {
+				document.getElementById("rxConsole").value = "";
+				Socket = new ReconnectingWebSocket('ws://' + window.location.hostname + ':81/');
+				//		  Socket.debug = true;
+				Socket.reconnectInterval = 500;
+				Socket.maxReconnectInterval = 1000;
+				Socket.timeoutInterval = 1000;
+				Socket.onmessage = function(event){
+					console.log(event.data);
+					var str = event.data;
+					//			console.log(str);
+					var n = str.indexOf("Temp1=");
+					//			console.log(n);
+					var res = str.substring(n+6, 7+4);
+					//			console.log(res);
+					document.getElementById("Temp1").innerHTML = res;
+				}
+			}
+			function sendText(){
+				Socket.send(document.getElementById("txBar").value);
+				document.getElementById("txBar").value = "";
+			}
+			function sendBrightness(){
+				Socket.send("Bright1="+document.getElementById("Bright1").value);
+			}    
+			function showVal(newVal){
+				document.getElementById("valBox").innerHTML = Math.round(newVal/2.55);
+			}
+		</script>
+	</head>
+	<body onload="javascript:init()">
+	<div style="width:75%;">
+		<canvas id="canvas"></canvas>
+	</div>
+	<br>
+	<br>
+	<button id="randomizeData">Randomize Data</button>
+	<button id="addDataset">Add Dataset</button>
+	<button id="removeDataset">Remove Dataset</button>
+	<button id="addData">Add Data</button>
+	<button id="removeData">Remove Data</button>
+	<button id="schiftlData">Schift left Data</button>
+	<button onclick="mylabels.forEach(myFunction)">Try it</button>
+<p id="demo"></p>
+	<script>
+var jsonfile = {
+	"jsonarray": [{
+      "name": 'Joe',
+      "age": 12
+   }, {
+      "name": 'Tom',
+      "age": 14
+   }, {
+      "name": 'Chris',
+      "age": 3
+   }]
+};
+
+var mylabels = jsonfile.jsonarray.map(function(e) { return e.name; });
+console.log(mylabels);
+var data = jsonfile.jsonarray.map(function(e) { return e.age; });;
+console.log(data);
+
+var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+console.log(MONTHS);
+
+
+var config = {
+			type: 'line',
+			data: {
+				datasets: [{
+					label: 'Innentemperatur',
+					backgroundColor: window.chartColors.red,
+					borderColor: window.chartColors.red,
+					fill: false,
+				}]
+			},
+			options: {
+				responsive: true,
+				title: {
+					display: true,
+					text: 'Temperatur'
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Zeit'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: '°C'
+						}
+					}]
+				}
+			}
+		};
+
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myLine = new Chart(ctx, config);
+		};
+
+		document.getElementById('randomizeData').addEventListener('click', function() {
+			config.data.datasets.forEach(function(dataset) {
+				dataset.data = dataset.data.map(function() {
+					return randomScalingFactor();
+				});
+
+			});
+
+			window.myLine.update();
+		});
+
+		var colorNames = Object.keys(window.chartColors);
+		document.getElementById('addDataset').addEventListener('click', function() {
+			var colorName = colorNames[config.data.datasets.length % colorNames.length];
+			var newColor = window.chartColors[colorName];
+			var newDataset = {
+				label: 'Dataset ' + config.data.datasets.length,
+				backgroundColor: newColor,
+				borderColor: newColor,
+				data: [],
+				fill: false
+			};
+
+			for (var index = 0; index < config.data.labels.length; ++index) {
+				newDataset.data.push(randomScalingFactor());
+			}
+
+			config.data.datasets.push(newDataset);
+			window.myLine.update();
+		});
+
+		document.getElementById('addData').addEventListener('click', function() {
+			if (config.data.datasets.length > 0) {
+				//var month = MONTHS[config.data.labels.length % MONTHS.length];
+
+
+
+		config.data.labels.push(mylabels[0]);
+
+		config.data.datasets.forEach(function(dataset) {
+			dataset.data.push(data[0]);
+		});
+
+	window.myLine.update();
+	}
+		});
+
+		document.getElementById('removeDataset').addEventListener('click', function() {
+			config.data.datasets.splice(0, 1);
+			window.myLine.update();
+		});
+
+		document.getElementById('removeData').addEventListener('click', function() {
+			//config.data.labels.splice(-1, 1); // remove the label first
+			config.data.labels.splice(0, 1); // remove the label first
+
+			config.data.datasets.forEach(function(dataset) {
+				dataset.data.pop();
+			});
+
+			window.myLine.update();
+		});
+
+demoP = document.getElementById("demo");
+var numbers = [4, 9, 16, 25];
+
+function myFunction(item, index) {
+		config.data.labels.push(mylabels[index]);
+
+config.data.datasets.forEach(function(dataset) {
+		dataset.data.push(data[index]);
+});
+  demoP.innerHTML = demoP.innerHTML + "index[" + index + "]: " + item + "<br>";
+	window.myLine.update();
+}
+	</script>
+
+</body>
+
+</html>

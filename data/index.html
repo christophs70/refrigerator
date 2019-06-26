@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<!-- Required meta tags always come first -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta http-equiv="refresh" content="900" >
+		<!-- Title of page -->
+		<title>webserver_websockets.ino</title>
+		<!-- favicon --><!---->
+		<link rel="shortcut icon" href="favicon.ico">
+		<script src="reconnecting-websocket.js" type="text/javascript" async=""></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<!----><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.3/highlight.min.js"></script>
+		<!----><link href="https://necolas.github.io/normalize.css/latest/normalize.css" rel="stylesheet">
+		<!----><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		
+		<!--<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>-->
+		
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>-->
+		<!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>-->
+		<!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">-->
+		
+		<!--<script src="script.js"></script>-->
+		
+		<!----><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+		<!----><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		
+		<!--<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.js"></script>-->
+		<!--<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.css" rel="stylesheet">-->
+		
+		<!--<script src="bootstrap-toggle.js"></script>-->
+		<script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+		<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+<style>
+canvas{
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+.container {
+  max-width: 960px;
+}
+
+/*
+ * Custom translucent site header
+ */
+
+.site-header {
+  background-color: rgba(0, 0, 0, .85);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.site-header a {
+  color: #999;
+  transition: ease-in-out color .15s;
+}
+.site-header a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+/*
+ * Dummy devices (replace them with your own or something else entirely!)
+ */
+
+.product-device {
+  position: absolute;
+  right: 10%;
+  bottom: -30%;
+  width: 300px;
+  height: 540px;
+  background-color: #333;
+  border-radius: 21px;
+  -webkit-transform: rotate(30deg);
+  transform: rotate(30deg);
+}
+
+.product-device::before {
+  position: absolute;
+  top: 10%;
+  right: 10px;
+  bottom: 10%;
+  left: 10px;
+  content: "";
+  background-color: rgba(255, 255, 255, .1);
+  border-radius: 5px;
+}
+
+.product-device-2 {
+  top: -25%;
+  right: auto;
+  bottom: 0;
+  left: 5%;
+  background-color: #e5e5e5;
+}
+
+
+/*
+ * Extra utilities
+ */
+
+.flex-equal > * {
+  -ms-flex: 1;
+  flex: 1;
+}
+@media (min-width: 768px) {
+  .flex-md-equal > * {
+    -ms-flex: 1;
+    flex: 1;
+  }
+}
+
+.overflow-hidden { overflow: hidden; }
+
+.blink_me {
+  animation: blinking 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes blinking {
+  from,
+  49.9% {
+    opacity: 0;
+  }
+  50%,
+  to {
+    opacity: 1;
+  }
+}
+
+@font-face { font-family: 'digiFont';
+	src: url('256bytes.ttf') format('truetype'); }
+	
+	
+</style>
+
+</head>
+	<body onload="javascript:init()">
+
+<nav class="site-header sticky-top py-1">
+  <div class="container d-flex flex-column flex-md-row justify-content-between">
+    <a class="py-2" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="d-block mx-auto" role="img" viewBox="0 0 24 24" focusable="false"><title>Product</title><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"/></svg>
+    </a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Tour</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Product</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Features</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Enterprise</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Support</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Pricing</a>
+    <a class="py-2 d-none d-md-inline-block" href="#">Cart</a>
+  </div>
+</nav>
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light hero-image">
+	<div style="min-height: 300px"><canvas id="canvas"></canvas></div>
+<!--
+  <div class="col-md-5 p-lg-5 mx-auto my-5">
+    <h1 class="display-4 font-weight-normal">Punny headline</h1>
+    <p class="lead font-weight-normal">And an even wittier subheading to boot. Jumpstart your marketing efforts with this example based on Apple’s marketing pages.</p>
+    <a class="btn btn-outline-secondary" href="#">Coming soon</a>
+  </div>
+
+  <div class="product-device shadow-sm d-none d-md-block"></div>
+  <div class="product-device product-device-2 shadow-sm d-none d-md-block"></div>
+-->
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+  <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+    <div class="my-3 py-3">
+		<div class="d-md-flex flex-md-equal w-100">
+			<div class="bg-dark shadow-sm mx-auto" style="">
+				<p class="lead">Clock</p>
+				<h2 id="epoch" class="display-5" style="font-size: 70px;">Clock</h2>
+			</div>
+		</div>
+		<hr>
+		<div class="d-md-flex flex-md-equal w-100">
+			<div class="bg-dark shadow-sm mx-auto" style="">
+				<p class="lead">Temperature Inside</p>
+				<h1 id="Temp1"  class="display-5" style="font-size: 45px;">21.75&nbsp;°C</h1>
+			</div>
+			<div class="bg-dark shadow-sm mx-auto" style="">
+				<p class="lead">Temperature Outside</p>
+				<h1 id="Temp2"  class="display-5" style="font-size: 45px;">21.75&nbsp;°C</h1>
+			</div>
+		</div>
+		<hr>
+		<div class="d-md-flex flex-md-equal w-100">
+			<div class="bg-dark shadow-sm mx-auto" style="">
+				<p class="lead">Door</p>
+				<h1 id="Sw1"  class="display-5">status</h1>
+				<button id="ovdoor" style="color: black;" class="lead">toggle</button>
+			</div>
+			<div class="bg-dark shadow-sm mx-auto pl-md-3" style="">
+				<p class="lead">Kompressor</p>
+				<h1 id="Sw2"  class="display-5">status</h1>
+				<button id="ovkomp" style="color: black;" class="lead">toggle</button>
+			</div>
+			<div class="bg-dark shadow-sm mx-auto pl-md-3" style="">
+				<p class="lead">Fan</p>
+				<h1 id="Sw3"  class="display-5">status</h1>
+				<button id="ovfan" style="color: black;" class="lead">toggle</button>
+			</div>
+		</div>
+    </div>
+	<!--
+    <div class="bg-light shadow-sm mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"><p class="lead">Test1</p></div>font-family: digiFont;
+	-->
+  </div>
+  <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+    <div class="my-3 p-3">
+		<div class="d-md-flex flex-md-equal w-100">
+			<div class="bg-dark shadow-sm mx-auto" style="">
+				<p class="lead">Datesets</p>
+				<button id="deleteDataPoints" style="color: black;" class="lead">Delete</button>
+				<button id="resetDataPoints" style="color: black;" class="lead">Reset</button>
+			</div><!--width: 80%; height: 300px; border-radius: 21px 21px 0 0;-->
+			<div class="bg-dark shadow-sm mx-auto pl-md-3" style="">
+				<p class="lead">Datapoints</p>
+				<input class="text-center w-100" style="color: black;" type="text" id="txBarmaxDataPoints" onkeydown="if(event.keyCode == 13) {maxDataPoints=this.value;};">
+			</div><!--width: 80%; height: 300px; border-radius: 21px 21px 0 0;-->
+		</div>
+	  <hr>
+		<div class="d-md-flex flex-md-equal w-100">
+		  <p class="lead">Brightness</p>
+			<input type="range" min="0" max="255" value="128" id="Bright1" oninput="sendBrightness()">
+		  <h2 id="valBox" class="display-5">50 %</h2>
+		</div>
+		<hr>
+		<p class="lead">Send Data to Server</p>
+		<input style="color: black;" type="text" id="txBar" onkeydown="if(event.keyCode == 13) sendText();">
+		<hr>
+		<p class="lead">Recieve Data from Server</p>
+		<textarea style="width: 100%; height: 150px; color: black;" id="rxConsole"></textarea>
+    </div>
+	<!--
+    <div class="bg-dark shadow-sm mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+	-->
+  </div>
+</div>
+
+<footer class="container py-5">
+  <div class="row">
+    <div class="col-12 col-md">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="d-block mb-2" role="img" viewBox="0 0 24 24" focusable="false"><title>Product</title><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"/></svg>
+      <small class="d-block mb-3 text-muted">&copy; 2019 Christoph Schygulla</small>
+    </div>
+    <div class="col-6 col-md">
+      <h5>Features</h5>
+      <ul class="list-unstyled text-small">
+        <li><a class="text-muted" href="#">Cool stuff</a></li>
+        <li><a class="text-muted" href="#">Random feature</a></li>
+        <li><a class="text-muted" href="#">Team feature</a></li>
+        <li><a class="text-muted" href="#">Stuff for developers</a></li>
+        <li><a class="text-muted" href="#">Another one</a></li>
+        <li><a class="text-muted" href="#">Last time</a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-md">
+      <h5>Resources</h5>
+      <ul class="list-unstyled text-small">
+        <li><a class="text-muted" href="#">Resource</a></li>
+        <li><a class="text-muted" href="#">Resource name</a></li>
+        <li><a class="text-muted" href="#">Another resource</a></li>
+        <li><a class="text-muted" href="#">Final resource</a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-md">
+      <h5>Resources</h5>
+      <ul class="list-unstyled text-small">
+        <li><a class="text-muted" href="#">Business</a></li>
+        <li><a class="text-muted" href="#">Education</a></li>
+        <li><a class="text-muted" href="#">Government</a></li>
+        <li><a class="text-muted" href="#">Gaming</a></li>
+      </ul>
+    </div>
+    <div class="col-6 col-md">
+      <h5>About</h5>
+      <ul class="list-unstyled text-small">
+        <li><a class="text-muted" href="#">Team</a></li>
+        <li><a class="text-muted" href="#">Locations</a></li>
+        <li><a class="text-muted" href="#">Privacy</a></li>
+        <li><a class="text-muted" href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+</div>
+<script>
+/*(function blink() { 
+  $('.blink_me').fadeOut(500).fadeIn(500, blink); 
+})();
+window.onload = function() {
+};
+*/
+var Socket;
+var myLine;
+var getCSV;
+var maxDataPoints = 60*30*1;//3600;
+
+var myLineconfig = {
+	type: 'line',
+	data: {
+		datasets: [{
+			label: 'Temperature Inside',
+			backgroundColor: window.chartColors.blue,
+			borderColor: window.chartColors.blue,
+			fill: false,
+			linetension: 0.2,
+			pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+			borderWidth: 1,
+		}, {
+			label: 'Temperature Outside',
+			backgroundColor: window.chartColors.red,
+			borderColor: window.chartColors.red,
+			fill: false,
+			linetension: 0.2,
+			pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+			borderWidth: 1,
+		}, {
+			label: 'Door status',
+			backgroundColor: window.chartColors.green,
+			borderColor: window.chartColors.green,
+			fill: true,
+			linetension: 0,
+			pointHoverRadius: 1,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 1,
+            pointRadius: 1,
+			borderWidth: 1,
+		}]
+	},
+		responsive: true,
+		title: {
+			display: true,
+			text: 'Temperature'
+		},
+		tooltips: {
+			mode: 'index',
+			intersect: false
+		},
+		hover: {
+			mode: 'nearest',
+			intersect: true
+		},
+		options: {
+				title: {
+					text: 'Temperature last 1h', // chart title
+					display: true
+				},
+				scales: {
+					xAxes: [{
+						type: 'realtime' // auto-scroll on X axis
+					}]
+        },
+		scales: {
+			xAxes: [{
+				display: true,
+				scaleLabel: {
+					display: true,
+					labelString: 'Epoch'
+				}
+			}],
+			yAxes: [{
+				display: true,
+				scaleLabel: {
+					display: true,
+					labelString: '°C'
+				}
+			}]
+		}
+	}
+};
+
+document.getElementById('resetDataPoints').addEventListener('click', function() {
+	deleteData();
+	loadDataPoints();
+	document.getElementById("txBarmaxDataPoints").value = maxDataPoints;
+	maxDataPoints = 60*30*1;
+});
+
+document.getElementById('deleteDataPoints').addEventListener('click', function() {
+	deleteData();
+	document.getElementById("txBarmaxDataPoints").value = maxDataPoints;
+	maxDataPoints = 60*30*1;
+});
+
+
+function init() {
+
+	document.getElementById("txBar").value = "";
+	document.getElementById("valBox").innerHTML = Math.round(document.getElementById("Bright1").value / 2.55) + " %";
+	document.getElementById("rxConsole").value = "";
+	document.getElementById("txBarmaxDataPoints").value = maxDataPoints;
+
+	Socket = new ReconnectingWebSocket('ws://' + window.location.hostname + ':81/');
+	var ctx = document.getElementById('canvas').getContext('2d');
+	myLine = new Chart(ctx, myLineconfig);
+
+	deleteData();
+	loadDataPoints();
+
+//		  Socket.debug = true;
+	Socket.reconnectInterval = 500;
+	Socket.maxReconnectInterval = 1000;
+	Socket.timeoutInterval = 1000;
+	Socket.onmessage = function(event){
+		//console.log(event.data);
+		var str = event.data;
+		var res0 = str.split("?");
+		res0.forEach(function(item, index) {
+			//console.log("index[" + index + "]: " + item);
+			var res1 = item.split("=");
+				if (myLine.data.labels.length > maxDataPoints) removeData();
+				if (res1[0] == "rxConsole") {document.getElementById("rxConsole").value = document.getElementById("rxConsole").value += "\n" + res1[1];};
+				if (res1[0] == "Bright1") {
+					document.getElementById("Bright1").innerHTML = res1[1];
+					document.getElementById("valBox").innerHTML = Math.round(res1[1] / 2.55) + " %";
+					//showVal(res1[1]);
+				};
+				if (res1[0] == "epoch") {
+					document.getElementById("epoch").innerHTML = Unix_timestamp(res1[1]);
+						myLine.data.labels.push(res1[1]);
+				};
+				if (res1[0] == "Temp1") {
+					document.getElementById("Temp1").innerHTML = res1[1] + "&nbsp;°C";
+						myLine.data.datasets[0].data.push(res1[1]);
+				};
+				if (res1[0] == "Temp2") {
+					document.getElementById("Temp2").innerHTML = res1[1] + "&nbsp;°C";
+						myLine.data.datasets[1].data.push(res1[1]);
+				};
+				if (res1[0] == "Sw1") {
+						myLine.data.datasets[2].data.push(res1[1]);
+					if (res1[1] == "0") {
+						document.getElementById("Sw1").style.color = "green";
+						document.getElementById("Sw1").style.background = "white";
+						document.getElementById("Sw1").innerHTML = "closed!";
+						document.getElementById("Sw1").classList.remove("blink_me");
+					} else {
+						document.getElementById("Sw1").style.color = "red";
+						document.getElementById("Sw1").style.background = "white";
+						document.getElementById("Sw1").innerHTML = "OPEN!";
+						document.getElementById("Sw1").classList.add("blink_me");
+					};
+				};
+				myLine.update();
+		});
+	}
+}
+
+function loadDataPoints(){
+	getCSV('http://' + window.location.hostname + '/sensor.log',		
+		function(err, data) {
+		  if (err !== null) {
+			console.log('Something went wrong: ' + err);
+			} else {
+			//console.log(data);
+			var classes = CSVToArray(data, ';');
+			//console.log(classes);
+			classes.forEach(function(item, index) {
+				//console.log("index[" + index + "]: " + item);
+				//console.log(item[1]);
+				//console.log(item[2]);
+				if (item[0] == "1") {
+					myLine.data.labels.push(item[1]);
+					myLine.data.datasets[0].data.push(item[2]);
+				};
+				if (item[0] == "2") {
+					//myLine.data.labels.push(item[1]);
+					myLine.data.datasets[1].data.push(item[2]);
+				};
+				if (item[0] == "3") {
+					//myLine.data.labels.push(item[1]);
+					myLine.data.datasets[2].data.push(item[2]);
+				};
+			});
+		  }
+		});
+};
+
+var getCSV = function(url, callback) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'text';
+		xhr.onload = function() {
+		  var status = xhr.status;
+		  if (status === 200) {
+			callback(null, xhr.response);
+		  } else {
+			callback(status, xhr.response);
+		  }
+		};
+		xhr.send();
+};
+
+
+   function CSVToArray( strData, strDelimiter ){
+	   // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+            );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+                ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+
+            }
+
+            var strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                    );
+
+            } else {
+
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    }
+
+
+function sendText(){
+	Socket.send(document.getElementById("txBar").value);
+	document.getElementById("txBar").value = "";
+}
+
+function sendBrightness(){
+	document.getElementById("valBox").innerHTML = Math.round(document.getElementById("Bright1").value / 2.55) + " %";
+	Socket.send("Bright1="+document.getElementById("Bright1").value);
+}    
+//function showVal(newVal){}
+
+function Unix_timestamp(t){
+	var dt = new Date(t*1000);
+	var hr = dt.getHours();
+	var m = "0" + dt.getMinutes();
+	var s = "0" + dt.getSeconds();
+	return hr+ ':' + m.substr(-2) + ':' + s.substr(-2);  
+}
+
+function deleteData(){
+	while (myLine.data.labels.length > 0) {
+			myLine.data.labels.shift();
+			myLine.data.datasets[0].data.shift();
+			myLine.data.datasets[1].data.shift();
+			myLine.data.datasets[2].data.shift();
+		}
+}
+
+function removeData(){
+	while (myLine.data.labels.length > maxDataPoints) {
+		myLine.data.labels.shift();
+		myLine.data.datasets[0].data.shift();
+		myLine.data.datasets[1].data.shift();
+		myLine.data.datasets[2].data.shift();
+	}
+}
+
+function addData(label, data) {
+	if(myLine.data.labels.length > maxDataPoints) removeData();
+		myLine.data.labels.push(label);
+		myLine.data.datasets[0].data.push(data);
+		myLine.update();
+}
+
+var jsonfile = {
+	"jsonarray": [{
+      "name": 'Joe',
+      "age": 12
+   }, {
+      "name": 'Tom',
+      "age": 14
+   }, {
+      "name": 'Chris',
+      "age": 3
+   }]
+};
+//console.log(jsonfile);
+var mylabels = jsonfile.jsonarray.map(function(e) { return e.name; });
+//console.log(mylabels);
+var data = jsonfile.jsonarray.map(function(e) { return e.age; });;
+//console.log(data);
+var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+//console.log(MONTHS);
+var numbers = [4, 9, 16, 25];
+//console.log(numbers);
+
+
+//console.log(myLineconfig);
+
+</script>
+<footer class="fixed-bottom bg-dark footer mt-auto py-3">
+  <div class="container">
+    <span class="text-muted">&copy; 2019 Christoph Schygulla</span>
+  </div>
+</footer>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script>window.jQuery || document.write('<script src="jquery-slim.min.js"><\/script>')</script>
+<style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+.hero-image {
+  background-image: url("kuehlschrank.svg"); /* The image used */
+  background-color: #cccccc; /* Used if the image is unavailable */
+  min-height: 300px; /* You must set a specified height */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  /*background-size: cover;  Resize the background image to cover the entire container */
+}</style>
+</body>
+</html>
