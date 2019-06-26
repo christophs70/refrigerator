@@ -5,8 +5,8 @@
 
 //---------------------------------------------------------------
 /** WiFi Settings **/
-const char *ssid = "UPC3651551";
-const char *password = "MEHHTNQA";
+const char *ssid = "";
+const char *password = "";
 const char *ESP_HOST_NAME = "esp-" + ESP.getFlashChipId();
 
 void setup() {

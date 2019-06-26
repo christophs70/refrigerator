@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------------
-  05/24/2019
+  06/26/2019
   Author: Schygulla
   Platform: ESP8266
   Language: C++/Arduino/javascript
-  File: webserver_websockets.ino
+  File: ESP8266_refrigerator.ino
   ------------------------------------------------------------------------------
   Description:
-  Code for demonstrating how to transfer data between a web server
+  Code for rc a refrigerator by transfer data between a ESP 8266 web server
   and a web client in real-time using websockets.
 
   ------------------------------------------------------------------------------*/
@@ -16,7 +16,7 @@
 #include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
-#include <Average.h>
+#include <Average.h>                        //https://github.com/MajenkoLibraries/Average
 #include <ArduinoJson.h>
 #include <TimeLib.h>                        //https://github.com/PaulStoffregen/Time
 #include <WiFiUdp.h>
@@ -24,7 +24,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <SPI.h>
-#include "SdFat.h"
+#include "SdFat.h"                          //https://github.com/greiman/SdFat
 #include "sdios.h"
 SdFat sd;
 
@@ -34,8 +34,8 @@ const char *divider = F("//-----------------------------------------------------
 
 //---------------------------------------------------------------
 /** WiFi Settings **/
-const char *ssid = "UPC3651551";
-const char *password = "MEHHTNQA";
+const char *ssid = "";
+const char *password = "";
 const char *ESP_HOST_NAME = "test.ino";// + ESP.getFlashChipId();
 
 // Data wire is plugged into pin 5 on the ESP8266
